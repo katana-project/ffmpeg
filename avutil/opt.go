@@ -24,7 +24,21 @@ type Dictionary struct {
 	c *C.AVDictionary
 }
 
-func (d *Dictionary) Set(key, value string, flags DictionaryFlag) bool {
+func (d *Dictionary) Unwrap() unsafe.Pointer {
+	if d == nil {
+		return nil
+	}
+	return unsafe.Pointer(d.c)
+}
+
+func (d *Dictionary) UnwrapDest() unsafe.Pointer {
+	if d == nil {
+		return nil
+	}
+	return unsafe.Pointer(&d.c)
+}
+
+func (d *Dictionary) Set(key, value string, flags DictionaryFlag) int {
 	var (
 		key0   = C.CString(key)
 		value0 = C.CString(value)
@@ -32,7 +46,7 @@ func (d *Dictionary) Set(key, value string, flags DictionaryFlag) bool {
 	defer C.free(unsafe.Pointer(key0))
 	defer C.free(unsafe.Pointer(value0))
 
-	return C.av_dict_set(&d.c, key0, value0, C.int(flags)) >= 0
+	return int(C.av_dict_set(&d.c, key0, value0, C.int(flags)))
 }
 
 func (d *Dictionary) Count() int {
