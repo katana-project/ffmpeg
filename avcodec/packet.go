@@ -12,6 +12,10 @@ type Packet struct {
 	c *C.AVPacket
 }
 
+func NewPacket(ptr unsafe.Pointer) *Packet {
+	return &Packet{c: (*C.AVPacket)(ptr)}
+}
+
 func (p *Packet) Alloc() {
 	p.c = C.av_packet_alloc()
 	if p.c == nil {

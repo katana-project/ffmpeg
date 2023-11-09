@@ -11,7 +11,7 @@ import "unsafe"
 type DictionaryFlag int
 
 const (
-	DictionaryFlagMatchCase    DictionaryFlag = iota + 1
+	DictionaryFlagMatchCase    DictionaryFlag = 1
 	DictionaryFlagIgnoreSuffix DictionaryFlag = 2 << (iota - 1)
 	DictionaryFlagDontStrdupKey
 	DictionaryFlagDontStrdupVal
@@ -22,6 +22,10 @@ const (
 
 type Dictionary struct {
 	c *C.AVDictionary
+}
+
+func NewDictionary(ptr unsafe.Pointer) *Dictionary {
+	return &Dictionary{c: (*C.AVDictionary)(ptr)}
 }
 
 func (d *Dictionary) Unwrap() unsafe.Pointer {

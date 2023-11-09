@@ -7,12 +7,17 @@ package avformat
 */
 import "C"
 import (
+	"github.com/katana-project/ffmpeg/avcodec"
 	"github.com/katana-project/ffmpeg/avutil"
 	"unsafe"
 )
 
 type InputFormat struct {
 	c *C.AVInputFormat
+}
+
+func NewInputFormat(ptr unsafe.Pointer) *InputFormat {
+	return &InputFormat{c: (*C.AVInputFormat)(ptr)}
 }
 
 func (ifo *InputFormat) Unwrap() unsafe.Pointer {
@@ -33,6 +38,10 @@ type OutputFormat struct {
 	c *C.AVOutputFormat
 }
 
+func NewOutputFormat(ptr unsafe.Pointer) *OutputFormat {
+	return &OutputFormat{c: (*C.AVOutputFormat)(ptr)}
+}
+
 func (of *OutputFormat) Unwrap() unsafe.Pointer {
 	if of == nil {
 		return nil
@@ -47,8 +56,38 @@ func (of *OutputFormat) UnwrapDest() unsafe.Pointer {
 	return unsafe.Pointer(&of.c)
 }
 
+type Stream struct {
+	c *C.AVStream
+}
+
+func NewStream(ptr unsafe.Pointer) *Stream {
+	return &Stream{c: (*C.AVStream)(ptr)}
+}
+
+func (s *Stream) Unwrap() unsafe.Pointer {
+	if s == nil {
+		return nil
+	}
+	return unsafe.Pointer(s.c)
+}
+
+func (s *Stream) UnwrapDest() unsafe.Pointer {
+	if s == nil {
+		return nil
+	}
+	return unsafe.Pointer(&s.c)
+}
+
+func (s *Stream) CodecPar() *avcodec.CodecParameters {
+	return avcodec.NewCodecParameters(unsafe.Pointer(s.c.codecpar))
+}
+
 type FormatContext struct {
 	c *C.AVFormatContext
+}
+
+func NewFormatContext(ptr unsafe.Pointer) *FormatContext {
+	return &FormatContext{c: (*C.AVFormatContext)(ptr)}
 }
 
 func (fc *FormatContext) Unwrap() unsafe.Pointer {
@@ -97,4 +136,26 @@ func (fc *FormatContext) AllocOutputContext2(oformat *OutputFormat, formatName, 
 	defer C.free(unsafe.Pointer(filename0))
 
 	return int(C.avformat_alloc_output_context2(&fc.c, (*C.AVOutputFormat)(oformat.Unwrap()), formatName0, filename0))
+}
+
+func (fc *FormatContext) OFormat() *OutputFormat {
+	return &OutputFormat{c: fc.c.oformat}
+}
+
+func (fc *FormatContext) Streams() []*Stream {
+	var (
+		streamsNum = int(fc.c.nb_streams)
+
+		streams  = make([]*Stream, streamsNum)
+		streams0 = unsafe.Slice(fc.c.streams, streamsNum)
+	)
+	for i, s := range streams0 {
+		streams[i] = &Stream{c: s}
+	}
+
+	return streams
+}
+
+func (fc *FormatContext) NewStream(c *avcodec.Codec) *Stream {
+	return &Stream{c: C.avformat_new_stream(fc.c, (*C.AVCodec)(c.Unwrap()))}
 }

@@ -2,7 +2,7 @@ package ffmpeg
 
 import "unsafe"
 
-type UnsafeWrap interface {
+type UnsafeWrapper interface {
 	Unwrap() unsafe.Pointer
 	UnwrapDest() unsafe.Pointer
 }
