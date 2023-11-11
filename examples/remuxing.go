@@ -164,4 +164,5 @@ func main() {
 	}
 
 	ofmtCtx.WriteTrailer()
+	endFunc(0)
 }
