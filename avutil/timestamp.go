@@ -34,7 +34,7 @@ func Ts2Str(ts int64) string {
 }
 
 func Ts2TimeStr(ts int64, tb *Rational) string {
-	timeStr := C.av_ts2timestr_heap(C.int64_t(ts), tb.c)
+	timeStr := C.av_ts2timestr_heap(C.int64_t(ts), &tb.c)
 	defer C.free(unsafe.Pointer(timeStr))
 
 	return C.GoString(timeStr)

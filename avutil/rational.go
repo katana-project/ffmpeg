@@ -11,25 +11,14 @@ import (
 )
 
 type Rational struct {
-	c *C.AVRational
+	c C.AVRational
 }
 
 func NewRational(ptr unsafe.Pointer) *Rational {
-	return &Rational{c: (*C.AVRational)(ptr)}
-}
-
-func (r *Rational) Null() bool {
-	return r.c == nil
+	return &Rational{c: *(*C.AVRational)(ptr)}
 }
 
 func (r *Rational) Unwrap() unsafe.Pointer {
-	if r == nil {
-		return nil
-	}
-	return unsafe.Pointer(r.c)
-}
-
-func (r *Rational) UnwrapDest() unsafe.Pointer {
 	if r == nil {
 		return nil
 	}

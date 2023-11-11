@@ -2,8 +2,13 @@ package ffmpeg
 
 import "unsafe"
 
-type UnsafeWrapper interface {
-	Null() bool
+type ValueWrapper interface {
 	Unwrap() unsafe.Pointer
+}
+
+type PointerWrapper interface {
+	ValueWrapper
+
+	Null() bool
 	UnwrapDest() unsafe.Pointer
 }
