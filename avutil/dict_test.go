@@ -11,8 +11,8 @@ func TestDictionary_Set(t *testing.T) {
 		t.Errorf("expected empty dictionary, got %d element(s)", count)
 	}
 
-	if !dict.Set("test", "test", 0) {
-		t.Errorf("expected success")
+	if ret := dict.Set("test", "test", 0); ret < 0 {
+		t.Errorf("expected >= 0, got %d", ret)
 	}
 
 	count = dict.Count()

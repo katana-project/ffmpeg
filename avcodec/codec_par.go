@@ -19,6 +19,10 @@ func NewCodecParameters(ptr unsafe.Pointer) *CodecParameters {
 	return &CodecParameters{c: (*C.AVCodecParameters)(ptr)}
 }
 
+func (cp *CodecParameters) Null() bool {
+	return cp.c == nil
+}
+
 func (cp *CodecParameters) Unwrap() unsafe.Pointer {
 	if cp == nil {
 		return nil

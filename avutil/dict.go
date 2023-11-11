@@ -3,21 +3,20 @@ package avutil
 /*
 #cgo pkg-config: libavutil
 
-#include <libavutil/opt.h>
+#include <stdlib.h>
+#include <libavutil/dict.h>
 */
 import "C"
 import "unsafe"
 
-type DictionaryFlag int
-
 const (
-	DictionaryFlagMatchCase    DictionaryFlag = 1
-	DictionaryFlagIgnoreSuffix DictionaryFlag = 2 << (iota - 1)
-	DictionaryFlagDontStrdupKey
-	DictionaryFlagDontStrdupVal
-	DictionaryFlagDontOverwrite
-	DictionaryFlagAppend
-	DictionaryFlagMultikey
+	DictMatchCase     = 1
+	DictIgnoreSuffix  = 2
+	DictDontStrdupKey = 4
+	DictDontStrdupVal = 8
+	DictDontOverwrite = 16
+	DictAppend        = 32
+	DictMultikey      = 64
 )
 
 type Dictionary struct {
@@ -26,6 +25,10 @@ type Dictionary struct {
 
 func NewDictionary(ptr unsafe.Pointer) *Dictionary {
 	return &Dictionary{c: (*C.AVDictionary)(ptr)}
+}
+
+func (d *Dictionary) Null() bool {
+	return d.c == nil
 }
 
 func (d *Dictionary) Unwrap() unsafe.Pointer {
@@ -42,7 +45,7 @@ func (d *Dictionary) UnwrapDest() unsafe.Pointer {
 	return unsafe.Pointer(&d.c)
 }
 
-func (d *Dictionary) Set(key, value string, flags DictionaryFlag) int {
+func (d *Dictionary) Set(key, value string, flags int) int {
 	var (
 		key0   = C.CString(key)
 		value0 = C.CString(value)
