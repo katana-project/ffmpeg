@@ -22,14 +22,6 @@ func logPacket(fmtCtx *avformat.FormatContext, pkt *avcodec.Packet, tag string) 
 }
 
 func main() {
-	var (
-		ifmtCtx = &avformat.FormatContext{}
-		ofmtCtx = &avformat.FormatContext{}
-
-		inFilename, outFilename string
-		ofmt                    *avformat.OutputFormat
-	)
-
 	args := os.Args
 	if len(args) < 3 {
 		fmt.Printf("usage: %s input output\n", args[0])
@@ -38,11 +30,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	inFilename = args[1]
-	outFilename = args[2]
+	var (
+		ifmtCtx = &avformat.FormatContext{}
+		ofmtCtx = &avformat.FormatContext{}
+
+		ofmt *avformat.OutputFormat
+
+		inFilename  = args[1]
+		outFilename = args[2]
+	)
 
 	pkt := &avcodec.Packet{}
-	if ok := pkt.Alloc(); !ok {
+	if pkt.Null() {
 		fmt.Fprintln(os.Stderr, "Could not allocate AVPacket")
 		os.Exit(1)
 	}
@@ -82,7 +81,7 @@ func main() {
 	ofmtCtx.AllocOutputContext2(nil, "", outFilename)
 	if ofmtCtx.Null() {
 		fmt.Fprintln(os.Stderr, "Could not create output context")
-		endFunc(0)
+		endFunc(avutil.ErrorUnknown)
 	}
 
 	ofmt = ofmtCtx.OFormat()
@@ -106,11 +105,11 @@ func main() {
 		outStream := ofmtCtx.NewStream(nil)
 		if outStream.Null() {
 			fmt.Fprintln(os.Stderr, "Failed allocating output stream")
-			endFunc(0)
+			endFunc(avutil.ErrorUnknown)
 		}
 
 		outCodecPar := outStream.CodecPar()
-		if ret := outCodecPar.Copy(inCodecPar); ret < 0 {
+		if ret := inCodecPar.Copy(outCodecPar); ret < 0 {
 			fmt.Fprintln(os.Stderr, "Failed to copy codec parameters")
 			endFunc(ret)
 		}
@@ -144,7 +143,7 @@ func main() {
 			inStream  = inStreams[streamIdx]
 			mappedId  = streamMapping[streamIdx]
 		)
-		if pkt.StreamIndex() >= streamIndex || mappedId < 0 {
+		if streamIdx >= streamIndex || mappedId < 0 {
 			pkt.Unref()
 			continue
 		}

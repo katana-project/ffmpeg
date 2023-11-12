@@ -41,8 +41,8 @@ func (cp *CodecParameters) CodecType() avutil.MediaType {
 	return avutil.MediaType(cp.c.codec_type)
 }
 
-func (cp *CodecParameters) Copy(src *CodecParameters) int {
-	return int(C.avcodec_parameters_copy(cp.c, src.c))
+func (cp *CodecParameters) Copy(dst *CodecParameters) int {
+	return int(C.avcodec_parameters_copy(dst.c, cp.c))
 }
 
 func (cp *CodecParameters) SetCodecTag(codecTag uint32) {

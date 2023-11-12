@@ -37,9 +37,8 @@ func (p *Packet) UnwrapDest() unsafe.Pointer {
 	return unsafe.Pointer(&p.c)
 }
 
-func (p *Packet) Alloc() bool {
+func (p *Packet) Alloc() {
 	p.c = C.av_packet_alloc()
-	return p.c != nil
 }
 
 func (p *Packet) StreamIndex() int {
