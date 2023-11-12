@@ -60,8 +60,52 @@ func (d *Dictionary) Count() int {
 	return int(C.av_dict_count(d.c))
 }
 
+func (d *Dictionary) Iterate(prev *DictionaryEntry) *DictionaryEntry {
+	var prevPtr *C.AVDictionaryEntry
+	if prev != nil {
+		prevPtr = prev.c
+	}
+
+	e := C.av_dict_iterate(d.c, prevPtr)
+	if e == nil {
+		return nil
+	}
+
+	return &DictionaryEntry{c: e}
+}
+
 func (d *Dictionary) Free() {
 	if d.c != nil {
 		C.av_dict_free(&d.c)
 	}
+}
+
+type DictionaryEntry struct {
+	c *C.AVDictionaryEntry
+}
+
+func (de *DictionaryEntry) Null() bool {
+	return de.c == nil
+}
+
+func (de *DictionaryEntry) Unwrap() unsafe.Pointer {
+	if de == nil {
+		return nil
+	}
+	return unsafe.Pointer(de.c)
+}
+
+func (de *DictionaryEntry) UnwrapDest() unsafe.Pointer {
+	if de == nil {
+		return nil
+	}
+	return unsafe.Pointer(&de.c)
+}
+
+func (de *DictionaryEntry) Key() string {
+	return C.GoString(de.c.key)
+}
+
+func (de *DictionaryEntry) Value() string {
+	return C.GoString(de.c.value)
 }

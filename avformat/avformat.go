@@ -240,6 +240,10 @@ func (fc *FormatContext) SetPb(pb *IOContext) {
 	fc.c.pb = pb.c
 }
 
+func (fc *FormatContext) Metadata() *avutil.Dictionary {
+	return avutil.NewDictionary(unsafe.Pointer(fc.c.metadata))
+}
+
 func (fc *FormatContext) CloseInput() {
 	C.avformat_close_input(&fc.c)
 }

@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+// based on https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/remux.c
+
 func logPacket(fmtCtx *avformat.FormatContext, pkt *avcodec.Packet, tag string) {
 	timeBase := fmtCtx.Stream(pkt.StreamIndex()).TimeBase()
 
