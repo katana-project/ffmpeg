@@ -7,6 +7,7 @@ package avformat
 */
 import "C"
 import (
+	"github.com/katana-project/ffmpeg"
 	"github.com/katana-project/ffmpeg/avcodec"
 	"github.com/katana-project/ffmpeg/avutil"
 	"unsafe"
@@ -58,6 +59,26 @@ func (ifo *InputFormat) UnwrapDest() unsafe.Pointer {
 	return unsafe.Pointer(&ifo.c)
 }
 
+func (ifo *InputFormat) Flags() int {
+	return int(ifo.c.flags)
+}
+
+func (ifo *InputFormat) Name() string {
+	return C.GoString(ifo.c.name)
+}
+
+func (ifo *InputFormat) LongName() string {
+	return C.GoString(ifo.c.long_name)
+}
+
+func (ifo *InputFormat) MIMEType() string {
+	return C.GoString(ifo.c.mime_type)
+}
+
+func (ifo *InputFormat) Extensions() string {
+	return C.GoString(ifo.c.extensions)
+}
+
 type OutputFormat struct {
 	c *C.AVOutputFormat
 }
@@ -86,6 +107,22 @@ func (of *OutputFormat) UnwrapDest() unsafe.Pointer {
 
 func (of *OutputFormat) Flags() int {
 	return int(of.c.flags)
+}
+
+func (of *OutputFormat) Name() string {
+	return C.GoString(of.c.name)
+}
+
+func (of *OutputFormat) LongName() string {
+	return C.GoString(of.c.long_name)
+}
+
+func (of *OutputFormat) MIMEType() string {
+	return C.GoString(of.c.mime_type)
+}
+
+func (of *OutputFormat) Extensions() string {
+	return C.GoString(of.c.extensions)
 }
 
 type Stream struct {
@@ -250,4 +287,22 @@ func (fc *FormatContext) CloseInput() {
 
 func (fc *FormatContext) FreeContext() {
 	C.avformat_free_context(fc.c)
+}
+
+func MuxerIterate(opaque *ffmpeg.IterationState) *OutputFormat {
+	of := C.av_muxer_iterate((*unsafe.Pointer)(opaque.UnwrapDest()))
+	if of == nil {
+		return nil
+	}
+
+	return &OutputFormat{c: of}
+}
+
+func DemuxerIterate(opaque *ffmpeg.IterationState) *InputFormat {
+	ifo := C.av_demuxer_iterate((*unsafe.Pointer)(opaque.UnwrapDest()))
+	if ifo == nil {
+		return nil
+	}
+
+	return &InputFormat{c: ifo}
 }
