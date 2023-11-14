@@ -38,44 +38,36 @@ func main() {
 
 		ofmt *avformat.OutputFormat
 
+		ret         = 0
 		inFilename  = args[1]
 		outFilename = args[2]
 	)
 
 	pkt := &avcodec.Packet{}
-	if pkt.Null() {
+	if pkt.Alloc(); pkt.Null() {
 		fmt.Fprintln(os.Stderr, "Could not allocate AVPacket")
 		os.Exit(1)
 	}
 
-	endFunc := func(ret int) {
-		pkt.Free()
-		ifmtCtx.CloseInput()
-
-		if !ofmtCtx.Null() && (ofmt.Flags()&avformat.FmtNoFile) == 0 {
-			pb := ofmtCtx.Pb()
-			pb.CloseP()
-
-			ofmtCtx.SetPb(pb)
-		}
-		ofmtCtx.FreeContext()
-
+	defer func() {
 		if ret < 0 && ret != avutil.ErrorEOF {
 			fmt.Fprintf(os.Stderr, "Error occurred: %s\n", avutil.Err2Str(ret))
 			os.Exit(1)
 		}
 
 		os.Exit(0)
-	}
+	}()
+	defer pkt.Free()
 
-	if ret := ifmtCtx.OpenInput(inFilename, nil, nil); ret < 0 {
+	if ret = ifmtCtx.OpenInput(inFilename, nil, nil); ret < 0 {
 		fmt.Fprintf(os.Stderr, "Could not open input file '%s'\n", inFilename)
-		endFunc(ret)
+		return
 	}
+	defer ifmtCtx.CloseInput()
 
-	if ret := ifmtCtx.FindStreamInfo(nil); ret < 0 {
+	if ret = ifmtCtx.FindStreamInfo(nil); ret < 0 {
 		fmt.Fprintln(os.Stderr, "Failed to retrieve input stream information")
-		endFunc(ret)
+		return
 	}
 
 	ifmtCtx.DumpFormat(0, inFilename, false)
@@ -83,12 +75,16 @@ func main() {
 	ofmtCtx.AllocOutputContext2(nil, "", outFilename)
 	if ofmtCtx.Null() {
 		fmt.Fprintln(os.Stderr, "Could not create output context")
-		endFunc(avutil.ErrorUnknown)
+
+		ret = avutil.ErrorUnknown
+		return
 	}
+	defer ofmtCtx.FreeContext()
 
 	ofmt = ofmtCtx.OFormat()
 	var (
-		inStreams     = ifmtCtx.Streams()
+		inStreams = ifmtCtx.Streams()
+
 		streamIndex   = 0
 		streamMapping = make([]int, ifmtCtx.NbStreams())
 	)
@@ -107,13 +103,15 @@ func main() {
 		outStream := ofmtCtx.NewStream(nil)
 		if outStream.Null() {
 			fmt.Fprintln(os.Stderr, "Failed allocating output stream")
-			endFunc(avutil.ErrorUnknown)
+
+			ret = avutil.ErrorUnknown
+			return
 		}
 
 		outCodecPar := outStream.CodecPar()
-		if ret := inCodecPar.Copy(outCodecPar); ret < 0 {
+		if ret = inCodecPar.Copy(outCodecPar); ret < 0 {
 			fmt.Fprintln(os.Stderr, "Failed to copy codec parameters")
-			endFunc(ret)
+			return
 		}
 		outCodecPar.SetCodecTag(0)
 	}
@@ -121,22 +119,26 @@ func main() {
 
 	if (ofmt.Flags() & avformat.FmtNoFile) == 0 {
 		pb := ofmtCtx.Pb()
-		if ret := pb.Open(outFilename, avformat.IOFlagWrite); ret < 0 {
+		if ret = pb.Open(outFilename, avformat.IOFlagWrite); ret < 0 {
 			fmt.Fprintf(os.Stderr, "Could not open output file '%s'\n", outFilename)
-			endFunc(ret)
+			return
 		}
 
 		ofmtCtx.SetPb(pb)
+		defer func() {
+			pb.CloseP()
+			ofmtCtx.SetPb(pb)
+		}()
 	}
 
-	if ret := ofmtCtx.WriteHeader(nil); ret < 0 {
+	if ret = ofmtCtx.WriteHeader(nil); ret < 0 {
 		fmt.Fprintln(os.Stderr, "Error occurred when opening output file")
-		endFunc(ret)
+		return
 	}
 
 	outStreams := ofmtCtx.Streams()
 	for {
-		if ret := ifmtCtx.ReadFrame(pkt); ret < 0 {
+		if ret = ifmtCtx.ReadFrame(pkt); ret < 0 {
 			break
 		}
 
@@ -158,12 +160,11 @@ func main() {
 		pkt.SetPos(-1)
 		logPacket(ofmtCtx, pkt, "out")
 
-		if ret := ofmtCtx.InterleavedWriteFrame(pkt); ret < 0 {
+		if ret = ofmtCtx.InterleavedWriteFrame(pkt); ret < 0 {
 			fmt.Fprintln(os.Stderr, "Error muxing packet")
 			break
 		}
 	}
 
 	ofmtCtx.WriteTrailer()
-	endFunc(0)
 }
