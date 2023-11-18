@@ -6,7 +6,10 @@ package avcodec
 #include <libavcodec/codec.h>
 */
 import "C"
-import "unsafe"
+import (
+	"github.com/katana-project/ffmpeg"
+	"unsafe"
+)
 
 type Codec struct {
 	c *C.AVCodec
@@ -32,4 +35,63 @@ func (c *Codec) UnwrapDest() unsafe.Pointer {
 		return nil
 	}
 	return unsafe.Pointer(&c.c)
+}
+
+func (c *Codec) IsEncoder() int {
+	return int(C.av_codec_is_encoder(c.c))
+}
+
+func (c *Codec) IsDecoder() int {
+	return int(C.av_codec_is_decoder(c.c))
+}
+
+func CodecIterate(opaque *ffmpeg.IterationState) *Codec {
+	c := C.av_codec_iterate((*unsafe.Pointer)(opaque.UnwrapDest()))
+	if c == nil {
+		return nil
+	}
+
+	return &Codec{c: c}
+}
+
+func FindDecoder(id CodecID) *Codec {
+	c := C.avcodec_find_decoder(uint32(id))
+	if c == nil {
+		return nil
+	}
+
+	return &Codec{c: c}
+}
+
+func FindDecoderByName(name string) *Codec {
+	name0 := C.CString(name)
+	defer C.free(unsafe.Pointer(name0))
+
+	c := C.avcodec_find_decoder_by_name(name0)
+	if c == nil {
+		return nil
+	}
+
+	return &Codec{c: c}
+}
+
+func FindEncoder(id CodecID) *Codec {
+	c := C.avcodec_find_encoder(uint32(id))
+	if c == nil {
+		return nil
+	}
+
+	return &Codec{c: c}
+}
+
+func FindEncoderByName(name string) *Codec {
+	name0 := C.CString(name)
+	defer C.free(unsafe.Pointer(name0))
+
+	c := C.avcodec_find_encoder_by_name(name0)
+	if c == nil {
+		return nil
+	}
+
+	return &Codec{c: c}
 }

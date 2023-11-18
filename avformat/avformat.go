@@ -159,6 +159,10 @@ func (s *Stream) TimeBase() *avutil.Rational {
 	return avutil.NewRational(unsafe.Pointer(&s.c.time_base))
 }
 
+func (s *Stream) SetTimeBase(timeBase *avutil.Rational) {
+	s.c.time_base = *(*C.AVRational)(timeBase.Unwrap())
+}
+
 type FormatContext struct {
 	c *C.AVFormatContext
 }
