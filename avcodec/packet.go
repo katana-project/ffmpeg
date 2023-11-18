@@ -41,6 +41,18 @@ func (p *Packet) Alloc() {
 	p.c = C.av_packet_alloc()
 }
 
+func (p *Packet) New(size int) int {
+	return int(C.av_new_packet(p.c, C.int(size)))
+}
+
+func (p *Packet) Shrink(size int) {
+	C.av_shrink_packet(p.c, C.int(size))
+}
+
+func (p *Packet) Grow(growBy int) int {
+	return int(C.av_grow_packet(p.c, C.int(growBy)))
+}
+
 func (p *Packet) StreamIndex() int {
 	return int(p.c.stream_index)
 }

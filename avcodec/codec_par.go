@@ -49,6 +49,10 @@ func (cp *CodecParameters) SetCodecTag(codecTag uint32) {
 	cp.c.codec_tag = C.uint32_t(codecTag)
 }
 
+func (cp *CodecParameters) CodecID() CodecID {
+	return CodecID(cp.c.codec_id)
+}
+
 func (cp *CodecParameters) SetCodecID(codecID CodecID) {
 	cp.c.codec_id = uint32(codecID)
 }
