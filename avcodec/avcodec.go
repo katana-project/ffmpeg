@@ -87,6 +87,38 @@ func (cc *CodecContext) SetTimeBase(timeBase *avutil.Rational) {
 	cc.c.time_base = *(*C.AVRational)(timeBase.Unwrap())
 }
 
+func (cc *CodecContext) Framerate() *avutil.Rational {
+	return avutil.NewRational(unsafe.Pointer(&cc.c.framerate))
+}
+
+func (cc *CodecContext) SetFramerate(framerate *avutil.Rational) {
+	cc.c.framerate = *(*C.AVRational)(framerate.Unwrap())
+}
+
+func (cc *CodecContext) PixFmt() avutil.PixelFormat {
+	return avutil.PixelFormat(cc.c.pix_fmt)
+}
+
+func (cc *CodecContext) SetPixFmt(pixFmt avutil.PixelFormat) {
+	cc.c.pix_fmt = int32(pixFmt)
+}
+
+func (cc *CodecContext) Width() int {
+	return int(cc.c.width)
+}
+
+func (cc *CodecContext) SetWidth(width int) {
+	cc.c.width = C.int(width)
+}
+
+func (cc *CodecContext) Height() int {
+	return int(cc.c.height)
+}
+
+func (cc *CodecContext) SetHeight(height int) {
+	cc.c.height = C.int(height)
+}
+
 func (cc *CodecContext) DecodeSubtitle2(sub *Subtitle, avpkt *Packet) (int, int) {
 	var gotSubPtr C.int
 	return int(C.avcodec_decode_subtitle2(cc.c, sub.c, &gotSubPtr, avpkt.c)), int(gotSubPtr)
@@ -94,6 +126,22 @@ func (cc *CodecContext) DecodeSubtitle2(sub *Subtitle, avpkt *Packet) (int, int)
 
 func (cc *CodecContext) EncodeSubtitle(pkt *Packet, sub *Subtitle) int { // deviation from libavcodec's api - use a packet's buffer
 	return int(C.avcodec_encode_subtitle(cc.c, pkt.c.data, pkt.c.size, sub.c))
+}
+
+func (cc *CodecContext) SendFrame(frame *avutil.Frame) int {
+	return int(C.avcodec_send_frame(cc.c, (*C.AVFrame)(frame.Unwrap())))
+}
+
+func (cc *CodecContext) ReceiveFrame(frame *avutil.Frame) int {
+	return int(C.avcodec_receive_frame(cc.c, (*C.AVFrame)(frame.Unwrap())))
+}
+
+func (cc *CodecContext) SendPacket(avpkt *Packet) int {
+	return int(C.avcodec_send_packet(cc.c, avpkt.c))
+}
+
+func (cc *CodecContext) ReceivePacket(avpkt *Packet) int {
+	return int(C.avcodec_receive_packet(cc.c, avpkt.c))
 }
 
 func (cc *CodecContext) Close() int {

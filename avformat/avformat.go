@@ -285,6 +285,11 @@ func (fc *FormatContext) Metadata() *avutil.Dictionary {
 	return avutil.NewDictionary(unsafe.Pointer(fc.c.metadata))
 }
 
+func (fc *FormatContext) FindBestStream(type_ avutil.MediaType, wantedStreamNb int, relatedStream int, flags int) (int, *avcodec.Codec) {
+	var decoderRet *C.AVCodec
+	return int(C.av_find_best_stream(fc.c, int32(type_), C.int(wantedStreamNb), C.int(relatedStream), &decoderRet, C.int(flags))), avcodec.NewCodec(unsafe.Pointer(decoderRet))
+}
+
 func (fc *FormatContext) CloseInput() {
 	C.avformat_close_input(&fc.c)
 }

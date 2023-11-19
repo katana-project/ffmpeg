@@ -24,3 +24,7 @@ func (r *Rational) Unwrap() unsafe.Pointer {
 	}
 	return unsafe.Pointer(&r.c)
 }
+
+func (r *Rational) Inv() *Rational {
+	return &Rational{c: C.av_inv_q(r.c)}
+}

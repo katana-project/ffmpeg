@@ -9,6 +9,7 @@ package avutil
 const int macro_AVERROR_EOF = AVERROR_EOF;
 const int macro_AVERROR_UNKNOWN = AVERROR_UNKNOWN;
 const int macro_AVERROR_ENOMEM = AVERROR(ENOMEM);
+const int macro_AVERROR_EAGAIN = AVERROR(EAGAIN);
 
 char* av_err2str_heap(int errnum) {
   char* buffer = malloc(AV_ERROR_MAX_STRING_SIZE);
@@ -26,6 +27,7 @@ var (
 	ErrorEOF     = int(C.macro_AVERROR_EOF)
 	ErrorUnknown = int(C.macro_AVERROR_UNKNOWN)
 	ErrorENoMem  = int(C.macro_AVERROR_ENOMEM)
+	ErrorEAgain  = int(C.macro_AVERROR_EAGAIN)
 )
 
 func Err2Str(errnum int) string {
