@@ -69,6 +69,10 @@ func (p *Packet) RescaleTs(tbSrc, tbDst *avutil.Rational) {
 	C.av_packet_rescale_ts(p.c, *(*C.AVRational)(tbSrc.Unwrap()), *(*C.AVRational)(tbDst.Unwrap()))
 }
 
+func (p *Packet) Pos() int64 {
+	return int64(p.c.pos)
+}
+
 func (p *Packet) SetPos(pos int64) {
 	p.c.pos = C.int64_t(pos)
 }

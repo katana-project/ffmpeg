@@ -25,6 +25,10 @@ func (r *Rational) Unwrap() unsafe.Pointer {
 	return unsafe.Pointer(&r.c)
 }
 
+func MakeRational(num, den int) *Rational {
+	return &Rational{c: C.av_make_q(C.int(num), C.int(den))}
+}
+
 func (r *Rational) Inv() *Rational {
 	return &Rational{c: C.av_inv_q(r.c)}
 }
