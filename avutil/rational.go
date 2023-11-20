@@ -29,6 +29,14 @@ func MakeRational(num, den int) *Rational {
 	return &Rational{c: C.av_make_q(C.int(num), C.int(den))}
 }
 
+func (r *Rational) Num() int {
+	return int(r.c.num)
+}
+
+func (r *Rational) Den() int {
+	return int(r.c.den)
+}
+
 func (r *Rational) Inv() *Rational {
 	return &Rational{c: C.av_inv_q(r.c)}
 }

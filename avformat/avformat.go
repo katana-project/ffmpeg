@@ -151,6 +151,10 @@ func (s *Stream) UnwrapDest() unsafe.Pointer {
 	return unsafe.Pointer(&s.c)
 }
 
+func (s *Stream) Index() int {
+	return int(s.c.index)
+}
+
 func (s *Stream) CodecPar() *avcodec.CodecParameters {
 	return avcodec.NewCodecParameters(unsafe.Pointer(s.c.codecpar))
 }
