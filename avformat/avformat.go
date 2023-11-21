@@ -125,6 +125,18 @@ func (of *OutputFormat) Extensions() string {
 	return C.GoString(of.c.extensions)
 }
 
+func (of *OutputFormat) AudioCodec() avcodec.CodecID {
+	return avcodec.CodecID(of.c.audio_codec)
+}
+
+func (of *OutputFormat) VideoCodec() avcodec.CodecID {
+	return avcodec.CodecID(of.c.video_codec)
+}
+
+func (of *OutputFormat) SubtitleCodec() avcodec.CodecID {
+	return avcodec.CodecID(of.c.subtitle_codec)
+}
+
 type Stream struct {
 	c *C.AVStream
 }
@@ -318,4 +330,49 @@ func DemuxerIterate(opaque *ffmpeg.IterationState) *InputFormat {
 	}
 
 	return &InputFormat{c: ifo}
+}
+
+func GuessFormat(shortName, filename, mimeType string) *OutputFormat {
+	var (
+		shortName0, filename0, mimeType0 *C.char
+	)
+	if shortName != "" { // zero value
+		shortName0 = C.CString(shortName)
+		defer C.free(unsafe.Pointer(shortName0))
+	}
+	if filename != "" { // zero value
+		filename0 = C.CString(filename)
+		defer C.free(unsafe.Pointer(filename0))
+	}
+	if mimeType != "" { // zero value
+		mimeType0 = C.CString(mimeType)
+		defer C.free(unsafe.Pointer(mimeType0))
+	}
+
+	of := C.av_guess_format(shortName0, filename0, mimeType0)
+	if of == nil {
+		return nil
+	}
+
+	return &OutputFormat{c: of}
+}
+
+func GuessCodec(fmt *OutputFormat, shortName, filename, mimeType string, type_ avutil.MediaType) avcodec.CodecID {
+	var (
+		shortName0, filename0, mimeType0 *C.char
+	)
+	if shortName != "" { // zero value
+		shortName0 = C.CString(shortName)
+		defer C.free(unsafe.Pointer(shortName0))
+	}
+	if filename != "" { // zero value
+		filename0 = C.CString(filename)
+		defer C.free(unsafe.Pointer(filename0))
+	}
+	if mimeType != "" { // zero value
+		mimeType0 = C.CString(mimeType)
+		defer C.free(unsafe.Pointer(mimeType0))
+	}
+
+	return avcodec.CodecID(C.av_guess_codec(fmt.c, shortName0, filename0, mimeType0, int32(type_)))
 }
