@@ -129,7 +129,12 @@ func (cc *CodecContext) EncodeSubtitle(pkt *Packet, sub *Subtitle) int { // devi
 }
 
 func (cc *CodecContext) SendFrame(frame *avutil.Frame) int {
-	return int(C.avcodec_send_frame(cc.c, (*C.AVFrame)(frame.Unwrap())))
+	var frame0 *C.AVFrame
+	if frame != nil {
+		frame0 = (*C.AVFrame)(frame.Unwrap())
+	}
+
+	return int(C.avcodec_send_frame(cc.c, frame0))
 }
 
 func (cc *CodecContext) ReceiveFrame(frame *avutil.Frame) int {
@@ -137,7 +142,12 @@ func (cc *CodecContext) ReceiveFrame(frame *avutil.Frame) int {
 }
 
 func (cc *CodecContext) SendPacket(avpkt *Packet) int {
-	return int(C.avcodec_send_packet(cc.c, avpkt.c))
+	var avpkt0 *C.AVPacket
+	if avpkt != nil {
+		avpkt0 = avpkt.c
+	}
+
+	return int(C.avcodec_send_packet(cc.c, avpkt0))
 }
 
 func (cc *CodecContext) ReceivePacket(avpkt *Packet) int {
