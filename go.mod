@@ -1,3 +1,3 @@
 module github.com/katana-project/ffmpeg
 
-go 1.21.1
+go 1.20
