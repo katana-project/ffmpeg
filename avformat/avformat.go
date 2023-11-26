@@ -137,6 +137,10 @@ func (of *OutputFormat) SubtitleCodec() avcodec.CodecID {
 	return avcodec.CodecID(of.c.subtitle_codec)
 }
 
+func (of *OutputFormat) QueryCodec(codecID avcodec.CodecID, stdCompliance int) int {
+	return int(C.avformat_query_codec(of.c, uint32(codecID), C.int(stdCompliance)))
+}
+
 type Stream struct {
 	c *C.AVStream
 }
