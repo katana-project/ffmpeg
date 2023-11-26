@@ -8,6 +8,7 @@ package avcodec
 import "C"
 import (
 	"github.com/katana-project/ffmpeg"
+	"github.com/katana-project/ffmpeg/avutil"
 	"unsafe"
 )
 
@@ -35,6 +36,22 @@ func (c *Codec) UnwrapDest() unsafe.Pointer {
 		return nil
 	}
 	return unsafe.Pointer(&c.c)
+}
+
+func (c *Codec) Name() string {
+	return C.GoString(c.c.name)
+}
+
+func (c *Codec) LongName() string {
+	return C.GoString(c.c.long_name)
+}
+
+func (c *Codec) Type() avutil.MediaType {
+	return avutil.MediaType(c.c._type)
+}
+
+func (c *Codec) ID() CodecID {
+	return CodecID(c.c.id)
 }
 
 func (c *Codec) IsEncoder() int {
